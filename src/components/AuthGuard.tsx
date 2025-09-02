@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { retrieveRawInitData } from '@telegram-apps/sdk-react';
 import { Spinner, Placeholder } from '@telegram-apps/telegram-ui';
-import { useUserVerification, useAuth } from '@/hooks/useAuth.js';
+import { useUserVerification, useAuth } from '@/hooks/useAuth';
+import type { AuthGuardProps } from '@/types/auth';
 
-export function AuthGuard({ children }) {
+export function AuthGuard({ children }: AuthGuardProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { getStoredAuth } = useAuth();
-  const [initRawData, setInitRawData] = useState(null);
+  const [initRawData, setInitRawData] = useState<string | null>(null);
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
@@ -26,31 +27,35 @@ export function AuthGuard({ children }) {
   useEffect(() => {
     if (isChecking || isLoading) return;
 
-    const storedAuth = getStoredAuth();
-    const isLoginPage = location.pathname === '/login';
+    const checkAuth = async () => {
+      const storedAuth = await getStoredAuth();
+      const isLoginPage = location.pathname === '/login';
 
-    // Agar user verification muvaffaqiyatli bo'lsa
-    if (verificationData?.token && verificationData?.user) {
-      if (isLoginPage) {
-        navigate('/');
+      // Agar user verification muvaffaqiyatli bo'lsa
+      if (verificationData?.token && verificationData?.user) {
+        if (isLoginPage) {
+          navigate('/');
+        }
+        return;
       }
-      return;
-    }
 
-    // Agar local storage'da auth bor bo'lsa
-    if (storedAuth?.isAuthenticated) {
-      if (isLoginPage) {
-        navigate('/');
+      // Agar SecureStorage'da auth bor bo'lsa
+      if (storedAuth?.isAuthenticated) {
+        if (isLoginPage) {
+          navigate('/');
+        }
+        return;
       }
-      return;
-    }
 
-    // Agar verification failed bo'lsa yoki auth yo'q bo'lsa, login sahifasiga yo'naltir
-    if (isError || (!verificationData && !storedAuth)) {
-      if (!isLoginPage) {
-        navigate('/login');
+      // Agar verification failed bo'lsa yoki auth yo'q bo'lsa, login sahifasiga yo'naltir
+      if (isError || (!verificationData && !storedAuth)) {
+        if (!isLoginPage) {
+          navigate('/login');
+        }
       }
-    }
+    };
+
+    checkAuth();
   }, [verificationData, isLoading, isError, isChecking, location.pathname, navigate, getStoredAuth]);
 
   if (isChecking || isLoading) {

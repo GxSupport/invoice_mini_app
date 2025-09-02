@@ -11,7 +11,7 @@ import {
   Banner
 } from '@telegram-apps/telegram-ui';
 import { Page } from '@/components/Page.tsx';
-import { loginUser } from '@/api/auth.js';
+import { loginUser } from '@/api/auth';
 
 export function LoginPage() {
   const [formData, setFormData] = useState({

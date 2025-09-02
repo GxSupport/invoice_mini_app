@@ -1,6 +1,7 @@
-import { getApiUrl, getApiLanguage } from './config.js';
+import { getApiUrl, getApiLanguage } from './config';
+import type { LoginCredentials, RegisterData, AuthData, VerificationResponse } from '@/types/auth';
 
-export const loginUser = async (credentials) => {
+export const loginUser = async (credentials: LoginCredentials): Promise<AuthData> => {
   const lang = getApiLanguage();
   const url = getApiUrl('/auth/login', lang);
   
@@ -20,7 +21,7 @@ export const loginUser = async (credentials) => {
   return response.json();
 };
 
-export const registerUser = async (userData) => {
+export const registerUser = async (userData: RegisterData): Promise<AuthData> => {
   const lang = getApiLanguage();
   const url = getApiUrl('/auth/register', lang);
   
@@ -40,16 +41,17 @@ export const registerUser = async (userData) => {
   return response.json();
 };
 
-export const verifyUser = async (initRawData) => {
+export const verifyUser = async (initRawData: string): Promise<VerificationResponse> => {
   const lang = getApiLanguage();
-  const url = getApiUrl('/auth/verify', lang);
+  const url = getApiUrl('/tgapp/check_user', lang);
   
   const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Authorization': `tma ${initRawData}`,
     },
-    body: JSON.stringify({ initData: initRawData }),
+    body: JSON.stringify({ init_data: initRawData }),
   });
 
   if (!response.ok) {
@@ -60,7 +62,7 @@ export const verifyUser = async (initRawData) => {
   return response.json();
 };
 
-export const logoutUser = async (token) => {
+export const logoutUser = async (token: string): Promise<{ message: string }> => {
   const lang = getApiLanguage();
   const url = getApiUrl('/auth/logout', lang);
   
