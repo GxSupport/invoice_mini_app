@@ -46,12 +46,11 @@ export const verifyUser = async (initRawData: string): Promise<VerificationRespo
   const url = getApiUrl('/tgapp/check_user', lang);
   
   const response = await fetch(url, {
-    method: 'POST',
+    method: 'GET',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `tma ${initRawData}`,
-    },
-    body: JSON.stringify({ init_data: initRawData }),
+    }
   });
 
   if (!response.ok) {
