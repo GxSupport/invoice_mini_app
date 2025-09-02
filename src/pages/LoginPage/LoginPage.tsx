@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import {
   Section,
@@ -12,31 +11,38 @@ import {
 } from '@telegram-apps/telegram-ui';
 import { Page } from '@/components/Page.tsx';
 import { loginUser } from '@/api/auth';
+import { useAuth } from '@/hooks/useAuth';
+import type { LoginCredentials } from '@/types/auth';
 
 export function LoginPage() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<LoginCredentials>({
     email: '',
     password: ''
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { setAuth } = useAuth();
 
-  const loginMutation = useMutation({
-    mutationFn: loginUser,
-    onSuccess: (data) => {
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      navigate('/');
-    }
-  });
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.email && formData.password) {
-      loginMutation.mutate(formData);
+    if (!formData.email || !formData.password) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const data = await loginUser(formData);
+      await setAuth(data);
+      navigate('/');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Kirish jarayonida xatolik yuz berdi');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleInputChange = (field) => (value) => {
+  const handleInputChange = (field: keyof LoginCredentials) => (value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -52,7 +58,7 @@ export function LoginPage() {
                 value={formData.email}
                 onChange={handleInputChange('email')}
                 type="email"
-                disabled={loginMutation.isPending}
+                disabled={isLoading}
               />
             </Cell>
             <Cell>
@@ -62,29 +68,29 @@ export function LoginPage() {
                 value={formData.password}
                 onChange={handleInputChange('password')}
                 type="password"
-                disabled={loginMutation.isPending}
+                disabled={isLoading}
               />
             </Cell>
             <Cell>
               <Button
                 size="l"
                 stretched
-                loading={loginMutation.isPending}
+                loading={isLoading}
                 onClick={handleSubmit}
                 disabled={!formData.email || !formData.password}
               >
-                {loginMutation.isPending ? 'Kirish...' : 'Kirish'}
+                {isLoading ? 'Kirish...' : 'Kirish'}
               </Button>
             </Cell>
           </form>
           
-          {loginMutation.isError && (
+          {error && (
             <Cell>
               <Banner
                 header="Xatolik"
                 type="error"
               >
-                {loginMutation.error?.message || 'Kirish jarayonida xatolik yuz berdi'}
+                {error}
               </Banner>
             </Cell>
           )}

@@ -2,8 +2,7 @@ import type { ReactNode } from 'react';
 
 export interface User {
   id: number;
-  firstName?: string;
-  lastName?: string;
+  full_name?: string;
   username?: string;
   languageCode?: string;
   email?: string;
@@ -11,7 +10,6 @@ export interface User {
 
 export interface AuthData {
   token: string;
-  user: User;
 }
 
 export interface AuthState {
@@ -50,4 +48,10 @@ export interface ApiResponse<T = any> {
 
 export interface VerificationResponse extends AuthData {
   message?: string;
+  is_exist: boolean;
+  token: string;
+}
+
+export interface ProfileResponse {
+  user: User;
 }

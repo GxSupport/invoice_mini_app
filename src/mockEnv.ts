@@ -63,8 +63,8 @@ if (import.meta.env.DEV) {
         // But in case you don't really need a valid init data, use this one:
         ['tgWebAppData', new URLSearchParams([
           ['auth_date', (new Date().getTime() / 1000 | 0).toString()],
-          ['hash', '0be03326edade3cab0db7234bdcae3e2c4294f67fbd63a7498c629a743fedd2d'],
-          ['signature', '6xt6B5YpaaYJStDvVMDosvq7QduyyK3b_TTZoiAj60Sfb45Cq3lnONNDxow8AK8yykTTWsr82Jufxar2vmFnBg'],
+          ['hash', '051167bacc19f2a117e0d4f968f2298e7a318034adce31c859885dd26e4c4359'],
+          ['signature', '9lbls4_oATDrolthz2G2FeUeA_2OVewyD_LEOoQbkxawzf711SQPGMy0GzLE7WlTdVge2HTHUIrYtz4W_H28Bg'],
           ['user', JSON.stringify({"id": 641942042,"first_name": "Одилбек","last_name": "Рахмонов","language_code": "ru","allows_write_to_pm": true,"photo_url": "https://t.me/i/userpic/320/Gg4fQ3xLs14X1KfBl3lZVHyObpJhZE4tDW0_wcBKR6M.svg"})],
         ]).toString()],
         ['tgWebAppVersion', '8.4'],

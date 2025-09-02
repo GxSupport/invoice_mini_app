@@ -26,18 +26,21 @@ export function AuthGuard({ children }: AuthGuardProps) {
 
   useEffect(() => {
     if (isChecking || isLoading) return;
-
+    console.log('isChecking:', isChecking);
+    console.log('isLoading:', isLoading);
     const checkAuth = async () => {
+      console.log('Checking authentication status...');
       const storedAuth = await getStoredAuth();
+      console.log('Stored Auth:', storedAuth);
       const isLoginPage = location.pathname === '/login';
-
-      // Agar user verification muvaffaqiyatli bo'lsa
-      if (verificationData?.token && verificationData?.user) {
+      // Agar user verification muvaffaqiyatli bo'lsa va user mavjud bo'lsa
+      if (verificationData?.token && verificationData?.is_exist) {
         if (isLoginPage) {
           navigate('/');
         }
         return;
       }
+
 
       // Agar SecureStorage'da auth bor bo'lsa
       if (storedAuth?.isAuthenticated) {
@@ -47,9 +50,14 @@ export function AuthGuard({ children }: AuthGuardProps) {
         return;
       }
 
-      // Agar verification failed bo'lsa yoki auth yo'q bo'lsa, login sahifasiga yo'naltir
-      if (isError || (!verificationData && !storedAuth)) {
+      // Agar verification failed bo'lsa, user mavjud emas bo'lsa, yoki auth yo'q bo'lsa, login sahifasiga yo'naltir
+      if (isError || (verificationData && !verificationData.is_exist) || (!verificationData && !storedAuth)) {
         if (!isLoginPage) {
+          console.log('Redirecting to login - reasons:', {
+            isError,
+            userNotExists: verificationData && !verificationData.is_exist,
+            noAuthData: !verificationData && !storedAuth
+          });
           navigate('/login');
         }
       }

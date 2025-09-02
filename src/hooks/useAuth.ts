@@ -1,50 +1,188 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect, useCallback } from 'react';
 import { getCloudStorageItem, setCloudStorageItem, deleteCloudStorageItem } from '@telegram-apps/sdk-react';
 import type { AuthData, AuthState, VerificationResponse } from '@/types/auth';
-import { verifyUser } from '@/api/auth';
+import { verifyUser, getProfile } from '@/api/auth';
 
 const AUTH_KEYS = {
   TOKEN: 'auth_token',
-  USER: 'auth_user',
+  USER: 'auth_user'
 } as const;
 
 export const useAuth = () => {
-  const queryClient = useQueryClient();
-
   const getStoredAuth = async (): Promise<AuthState | null> => {
+    console.log('getStoredAuth called');
     try {
-      const token = await getCloudStorageItem(AUTH_KEYS.TOKEN).catch(() => null);
-      const userStr = await getCloudStorageItem(AUTH_KEYS.USER).catch(() => null);
+      let token: string | null = null;
+      let user: any = null;
 
-      if (token && userStr) {
-        const user = JSON.parse(userStr);
-        return { token, user, isAuthenticated: true };
+      // Use localStorage in development mode
+      if (import.meta.env.DEV) {
+        console.log('Development mode: using localStorage');
+        token = localStorage.getItem(AUTH_KEYS.TOKEN);
+        const userStr = localStorage.getItem(AUTH_KEYS.USER);
+        user = userStr ? JSON.parse(userStr) : null;
+      } else {
+        // Check if CloudStorage is available in production
+        const telegram = (window as any).Telegram;
+        if (!telegram?.WebApp) {
+          console.warn('Telegram WebApp not available, using localStorage fallback');
+          token = localStorage.getItem(AUTH_KEYS.TOKEN);
+          const userStr = localStorage.getItem(AUTH_KEYS.USER);
+          user = userStr ? JSON.parse(userStr) : null;
+        } else {
+          console.log('Using CloudStorage');
+          token = await getCloudStorageItem(AUTH_KEYS.TOKEN);
+          const userStr = await getCloudStorageItem(AUTH_KEYS.USER);
+          user = userStr ? JSON.parse(userStr) : null;
+        }
       }
 
-      return null;
+      console.log('Retrieved token:', token);
+      console.log('Retrieved user:', user);
+
+      if (!token) {
+        return { token: null, user: null, isAuthenticated: false };
+      }
+
+      // If token exists but user data is missing, fetch from API
+      if (token && !user) {
+        console.log('Token exists but user data missing, fetching profile...');
+        try {
+          const profileResponse = await getProfile(token);
+          user = profileResponse.user;
+          
+          // Save user data to storage
+          if (import.meta.env.DEV) {
+            localStorage.setItem(AUTH_KEYS.USER, JSON.stringify(user));
+          } else {
+            const telegram = (window as any).Telegram;
+            if (telegram?.WebApp) {
+              await setCloudStorageItem(AUTH_KEYS.USER, JSON.stringify(user));
+            } else {
+              localStorage.setItem(AUTH_KEYS.USER, JSON.stringify(user));
+            }
+          }
+          
+          console.log('Profile fetched and saved:', user);
+          return { token, user, isAuthenticated: true };
+        } catch (error: any) {
+          console.error('Profile fetch failed:', error);
+          
+          // If 401, token is invalid - clear it
+          if (error.message?.includes('401') || error.response?.status === 401) {
+            console.log('Token is invalid (401), clearing auth');
+            await clearAuth();
+            return { token: null, user: null, isAuthenticated: false };
+          }
+          
+          // For other errors, return with token but no user
+          return { token, user: null, isAuthenticated: false };
+        }
+      }
+
+      // Both token and user exist
+      return { token, user, isAuthenticated: true };
     } catch (error) {
       console.error('Error in getStoredAuth:', error);
-      return null;
+      // Fallback to localStorage if CloudStorage fails
+      try {
+        const token = localStorage.getItem(AUTH_KEYS.TOKEN);
+        const userStr = localStorage.getItem(AUTH_KEYS.USER);
+        const user = userStr ? JSON.parse(userStr) : null;
+        console.log('Fallback storage - token:', token, 'user:', user);
+        
+        if (token && !user) {
+          // Try to fetch profile with localStorage token
+          try {
+            const profileResponse = await getProfile(token);
+            const fetchedUser = profileResponse.user;
+            localStorage.setItem(AUTH_KEYS.USER, JSON.stringify(fetchedUser));
+            return { token, user: fetchedUser, isAuthenticated: true };
+          } catch (profileError: any) {
+            if (profileError.message?.includes('401') || profileError.response?.status === 401) {
+              localStorage.removeItem(AUTH_KEYS.TOKEN);
+              localStorage.removeItem(AUTH_KEYS.USER);
+              return { token: null, user: null, isAuthenticated: false };
+            }
+            return { token, user: null, isAuthenticated: false };
+          }
+        }
+        
+        return { token, user, isAuthenticated: !!(token && user) };
+      } catch {
+        console.log('All storage methods failed');
+        return { token: null, user: null, isAuthenticated: false };
+      }
     }
   };
 
-  const setAuth = async (authData: AuthData): Promise<void> => {
+  const setAuth = useCallback(async (authData: AuthData & { user?: any }): Promise<void> => {
     try {
+      // Use localStorage in development mode
+      if (import.meta.env.DEV) {
+        console.log('Development mode: using localStorage for setAuth');
+        localStorage.setItem(AUTH_KEYS.TOKEN, authData.token);
+        if (authData.user) {
+          localStorage.setItem(AUTH_KEYS.USER, JSON.stringify(authData.user));
+        }
+        return;
+      }
+
+      // Check if CloudStorage is available in production
+      const telegram = (window as any).Telegram;
+      if (!telegram?.WebApp) {
+        console.warn('Telegram WebApp not available, using localStorage fallback for setAuth');
+        localStorage.setItem(AUTH_KEYS.TOKEN, authData.token);
+        if (authData.user) {
+          localStorage.setItem(AUTH_KEYS.USER, JSON.stringify(authData.user));
+        }
+        return;
+      }
+
       await setCloudStorageItem(AUTH_KEYS.TOKEN, authData.token);
-      await setCloudStorageItem(AUTH_KEYS.USER, JSON.stringify(authData.user));
+      if (authData.user) {
+        await setCloudStorageItem(AUTH_KEYS.USER, JSON.stringify(authData.user));
+      }
     } catch (error) {
       console.error('Error setting auth data:', error);
-      throw error;
+      // Fallback to localStorage
+      try {
+        localStorage.setItem(AUTH_KEYS.TOKEN, authData.token);
+        if (authData.user) {
+          localStorage.setItem(AUTH_KEYS.USER, JSON.stringify(authData.user));
+        }
+      } catch {
+        throw error;
+      }
     }
-  };
+  }, []);
 
   const clearAuth = async (): Promise<void> => {
     try {
-      await deleteCloudStorageItem(AUTH_KEYS.TOKEN).catch(() => {});
-      await deleteCloudStorageItem(AUTH_KEYS.USER).catch(() => {});
-      queryClient.clear();
+      // Use localStorage in development mode
+      if (import.meta.env.DEV) {
+        console.log('Development mode: using localStorage for clearAuth');
+        localStorage.removeItem(AUTH_KEYS.TOKEN);
+        localStorage.removeItem(AUTH_KEYS.USER);
+        return;
+      }
+
+      // Check if CloudStorage is available in production
+      const telegram = (window as any).Telegram;
+      if (!telegram?.WebApp) {
+        console.warn('Telegram WebApp not available, using localStorage fallback for clearAuth');
+        localStorage.removeItem(AUTH_KEYS.TOKEN);
+        localStorage.removeItem(AUTH_KEYS.USER);
+        return;
+      }
+
+      await deleteCloudStorageItem(AUTH_KEYS.TOKEN);
+      await deleteCloudStorageItem(AUTH_KEYS.USER);
     } catch (error) {
       console.error('Error clearing auth:', error);
+      // Fallback to localStorage
+      localStorage.removeItem(AUTH_KEYS.TOKEN);
+      localStorage.removeItem(AUTH_KEYS.USER);
     }
   };
 
@@ -57,17 +195,48 @@ export const useAuth = () => {
 
 export const useUserVerification = (initRawData: string | null) => {
   const { setAuth } = useAuth();
+  const [data, setData] = useState<VerificationResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const [hasRun, setHasRun] = useState(false);
 
-  return useQuery<VerificationResponse>({
-    queryKey: ['userVerification', initRawData],
-    queryFn: () => verifyUser(initRawData!),
-    enabled: !!initRawData,
-    retry: false,
-    staleTime: 0,
-    onSuccess: async (data: VerificationResponse) => {
-      if (data.token && data.user) {
-        await setAuth(data);
+  useEffect(() => {
+    if (!initRawData || hasRun) return;
+
+    const fetchVerification = async () => {
+      setIsLoading(true);
+      setIsError(false);
+      setError(null);
+      setHasRun(true);
+
+      try {
+        const result = await verifyUser(initRawData);
+        setData(result);
+        
+        // Only set auth if user exists and has token
+        if (result.token && result.is_exist) {
+          await setAuth(result);
+        } else if (!result.is_exist) {
+          // User does not exist, treat as unauthenticated
+          console.log('User does not exist (is_exist: false), treating as unauthenticated');
+          // Don't set data with null token, keep original result but don't authenticate
+        }
+      } catch (err) {
+        setIsError(true);
+        setError(err as Error);
+      } finally {
+        setIsLoading(false);
       }
-    },
-  });
+    };
+
+    fetchVerification();
+  }, [initRawData, hasRun, setAuth]);
+
+  return {
+    data,
+    isLoading,
+    isError,
+    error,
+  };
 };
