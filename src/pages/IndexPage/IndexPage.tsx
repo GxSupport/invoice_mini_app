@@ -22,6 +22,14 @@ export const IndexPage: FC = () => {
               TON Connect
             </Cell>
           </Link>
+          <Link to="/login">
+            <Cell
+              before={<Image src={tonSvg} style={{ backgroundColor: '#007AFF' }}/>}
+              subtitle="Login to your account"
+            >
+              Login
+            </Cell>
+          </Link>
         </Section>
         <Section
           header="Application Launch Data"

@@ -5,7 +5,7 @@ export interface User {
   full_name?: string;
   username?: string;
   languageCode?: string;
-  email?: string;
+  phoneNumber?: string;
 }
 
 export interface AuthData {
@@ -19,12 +19,12 @@ export interface AuthState {
 }
 
 export interface LoginCredentials {
-  email: string;
+  phoneNumber: string;
   password: string;
 }
 
 export interface RegisterData {
-  email: string;
+  phoneNumber: string;
   password: string;
   firstName?: string;
   lastName?: string;
