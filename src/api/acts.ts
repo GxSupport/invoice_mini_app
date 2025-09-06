@@ -1,6 +1,6 @@
 import { apiClient } from './config';
-import type { ActListResponse, Act, ActTabType, ActFilter } from '@/types/act';
-import type { ActDetail, ActDetailResponse } from '@/types/act/detail';
+import type { ActListResponse, ActTabType, ActFilter } from '@/types/act';
+import type { ActDetail } from '@/types/act/detail';
 
 // API Request interface matching backend parameters
 export interface ActApiRequest {
