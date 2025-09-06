@@ -88,7 +88,7 @@ export const ActDetailsPage: FC<ActDetailsPageProps> = ({
             {/* Header Section */}
             <ActHeader act={act} />
             sdas
-              <Link to="eimzo://testlink" style={{ textDecoration: 'none' }}> Open Link</Link>
+              <Link to="eimzo://sign?qc=Test" style={{ textDecoration: 'none' }}> Open Link</Link>
             {/* Seller Section */}
             <div style={{
               backgroundColor: 'var(--tg-theme-bg-color, #ffffff)'
