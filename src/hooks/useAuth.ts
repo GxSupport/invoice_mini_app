@@ -9,15 +9,13 @@ const AUTH_KEYS = {
 } as const;
 
 export const useAuth = () => {
-  const getStoredAuth = async (): Promise<AuthState | null> => {
-    console.log('getStoredAuth called');
+  const getStoredAuth = useCallback(async (): Promise<AuthState | null> => {
     try {
       let token: string | null = null;
       let user: any = null;
 
       // Use localStorage in development mode
       if (import.meta.env.DEV) {
-        console.log('Development mode: using localStorage');
         token = localStorage.getItem(AUTH_KEYS.TOKEN);
         const userStr = localStorage.getItem(AUTH_KEYS.USER);
         user = userStr ? JSON.parse(userStr) : null;
@@ -25,20 +23,16 @@ export const useAuth = () => {
         // Check if CloudStorage is available in production
         const telegram = (window as any).Telegram;
         if (!telegram?.WebApp) {
-          console.warn('Telegram WebApp not available, using localStorage fallback');
           token = localStorage.getItem(AUTH_KEYS.TOKEN);
           const userStr = localStorage.getItem(AUTH_KEYS.USER);
           user = userStr ? JSON.parse(userStr) : null;
         } else {
-          console.log('Using CloudStorage');
           token = await getCloudStorageItem(AUTH_KEYS.TOKEN);
           const userStr = await getCloudStorageItem(AUTH_KEYS.USER);
           user = userStr ? JSON.parse(userStr) : null;
         }
       }
 
-      console.log('Retrieved token:', token);
-      console.log('Retrieved user:', user);
 
       if (!token) {
         return { token: null, user: null, isAuthenticated: false };
@@ -46,7 +40,6 @@ export const useAuth = () => {
 
       // If token exists but user data is missing, fetch from API
       if (token && !user) {
-        console.log('Token exists but user data missing, fetching profile...');
         try {
           const profileResponse = await getProfile(token);
           user = profileResponse.data;
@@ -63,14 +56,11 @@ export const useAuth = () => {
             }
           }
 
-          console.log('Profile fetched and saved:', user);
           return { token, user, isAuthenticated: true };
         } catch (error: any) {
-          console.error('Profile fetch failed:', error);
 
           // If 401, token is invalid - clear it
           if (error.message?.includes('401') || error.response?.status === 401) {
-            console.log('Token is invalid (401), clearing auth');
             await clearAuth();
             return { token: null, user: null, isAuthenticated: false };
           }
@@ -83,13 +73,11 @@ export const useAuth = () => {
       // Both token and user exist
       return { token, user, isAuthenticated: true };
     } catch (error) {
-      console.error('Error in getStoredAuth:', error);
       // Fallback to localStorage if CloudStorage fails
       try {
         const token = localStorage.getItem(AUTH_KEYS.TOKEN);
         const userStr = localStorage.getItem(AUTH_KEYS.USER);
         const user = userStr ? JSON.parse(userStr) : null;
-        console.log('Fallback storage - token:', token, 'user:', user);
 
         if (token && !user) {
           // Try to fetch profile with localStorage token
@@ -110,17 +98,15 @@ export const useAuth = () => {
 
         return { token, user, isAuthenticated: !!(token && user) };
       } catch {
-        console.log('All storage methods failed');
         return { token: null, user: null, isAuthenticated: false };
       }
     }
-  };
+  }, []);
 
   const setAuth = useCallback(async (authData: AuthData & { user?: any }): Promise<void> => {
     try {
       // Use localStorage in development mode
       if (import.meta.env.DEV) {
-        console.log('Development mode: using localStorage for setAuth');
         localStorage.setItem(AUTH_KEYS.TOKEN, authData.token);
         if (authData.user) {
           localStorage.setItem(AUTH_KEYS.USER, JSON.stringify(authData.user));
@@ -131,7 +117,6 @@ export const useAuth = () => {
       // Check if CloudStorage is available in production
       const telegram = (window as any).Telegram;
       if (!telegram?.WebApp) {
-        console.warn('Telegram WebApp not available, using localStorage fallback for setAuth');
         localStorage.setItem(AUTH_KEYS.TOKEN, authData.token);
         if (authData.user) {
           localStorage.setItem(AUTH_KEYS.USER, JSON.stringify(authData.user));
@@ -144,7 +129,6 @@ export const useAuth = () => {
         await setCloudStorageItem(AUTH_KEYS.USER, JSON.stringify(authData.user));
       }
     } catch (error) {
-      console.error('Error setting auth data:', error);
       // Fallback to localStorage
       try {
         localStorage.setItem(AUTH_KEYS.TOKEN, authData.token);
@@ -161,7 +145,6 @@ export const useAuth = () => {
     try {
       // Use localStorage in development mode
       if (import.meta.env.DEV) {
-        console.log('Development mode: using localStorage for clearAuth');
         localStorage.removeItem(AUTH_KEYS.TOKEN);
         localStorage.removeItem(AUTH_KEYS.USER);
         return;
@@ -170,7 +153,6 @@ export const useAuth = () => {
       // Check if CloudStorage is available in production
       const telegram = (window as any).Telegram;
       if (!telegram?.WebApp) {
-        console.warn('Telegram WebApp not available, using localStorage fallback for clearAuth');
         localStorage.removeItem(AUTH_KEYS.TOKEN);
         localStorage.removeItem(AUTH_KEYS.USER);
         return;
@@ -179,7 +161,6 @@ export const useAuth = () => {
       await deleteCloudStorageItem(AUTH_KEYS.TOKEN);
       await deleteCloudStorageItem(AUTH_KEYS.USER);
     } catch (error) {
-      console.error('Error clearing auth:', error);
       // Fallback to localStorage
       localStorage.removeItem(AUTH_KEYS.TOKEN);
       localStorage.removeItem(AUTH_KEYS.USER);
@@ -213,10 +194,8 @@ export const useUserVerification = (initRawData: string | null) => {
       try {
         // Check if auth data already exists in storage
         const storedAuth = await getStoredAuth();
-        console.log('Checking stored auth before API call:', storedAuth);
-        
+
         if (storedAuth?.isAuthenticated && storedAuth.token && storedAuth.user) {
-          console.log('Auth data found in storage, skipping API call');
           // Create verification response from stored data
           setData({
             token: storedAuth.token,
@@ -227,7 +206,6 @@ export const useUserVerification = (initRawData: string | null) => {
           return;
         }
 
-        console.log('No valid auth data in storage, making API call');
         const result = await verifyUser(initRawData);
         setData(result);
 

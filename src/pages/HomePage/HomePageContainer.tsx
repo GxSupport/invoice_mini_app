@@ -25,7 +25,6 @@ export const HomePageContainer: FC = () => {
           navigate('/login');
         }
       } catch (error) {
-        console.error('Failed to load user data:', error);
         navigate('/login');
       } finally {
         setIsLoading(false);
@@ -36,8 +35,6 @@ export const HomePageContainer: FC = () => {
   }, []);
 
   const handleMenuOpen = (type: MenuItemType) => {
-    console.log('Opening menu item:', type);
-    
     switch (type) {
       case 'act':
         navigate('/act');

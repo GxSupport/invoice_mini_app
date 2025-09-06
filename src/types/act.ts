@@ -1,3 +1,5 @@
+import {ActListResponseData} from "@/types/act/list.ts";
+
 export type ActStatus = 'draft' | 'sending' | 'sent' | 'received' | 'completed' | 'error';
 
 export type ActTabType = 'incoming' | 'outgoing' | 'draft' | 'sending';
@@ -27,9 +29,9 @@ export interface ActFilter {
 }
 
 export interface ActListResponse {
-  items: Act[];
+  items: ActListResponseData[];
   hasMore: boolean;
-  cursor?: string;
+  cursor?: number;
   total: number;
 }
 

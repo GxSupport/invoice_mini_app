@@ -26,7 +26,7 @@ const emitTelemetryEvent = (event: string, data?: Record<string, any>) => {
 export const ActListPage: FC<ActListProps> = ({ onItemClick }) => {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  
+
   const {
     currentTab,
     setCurrentTab,
@@ -95,14 +95,15 @@ export const ActListPage: FC<ActListProps> = ({ onItemClick }) => {
   // Handle infinite scroll event
   useEffect(() => {
     if (isLoading) {
-      emitTelemetryEvent('infinite_load_request', { 
-        tab: currentTab, 
-        currentItemsCount: items.length 
+      emitTelemetryEvent('infinite_load_request', {
+        tab: currentTab,
+        currentItemsCount: items.length
       });
     }
   }, [isLoading, currentTab, items.length]);
 
-  return (
+  // @ts-ignore
+    return (
     <Page back={true}>
       <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
         {/* Header with Filter Button */}
@@ -125,8 +126,8 @@ export const ActListPage: FC<ActListProps> = ({ onItemClick }) => {
           <IconButton
             onClick={handleFilterOpen}
             style={{
-              color: hasActiveFilters 
-                ? 'var(--tg-theme-button-color, #007AFF)' 
+              color: hasActiveFilters
+                ? 'var(--tg-theme-button-color, #007AFF)'
                 : 'var(--tg-theme-hint-color, #999999)'
             }}
           >
@@ -138,7 +139,7 @@ export const ActListPage: FC<ActListProps> = ({ onItemClick }) => {
         <ActTabs activeTab={currentTab} onTabChange={handleTabChange} />
 
         {/* Content */}
-        <div 
+        <div
           ref={scrollContainerRef}
           style={{
             flex: 1,
@@ -152,7 +153,7 @@ export const ActListPage: FC<ActListProps> = ({ onItemClick }) => {
           {error && (
             <div style={{ padding: '8px 16px' }}>
               <Banner
-                type="error"
+                type="section"
                 header="Ошибка загрузки"
                 description={error}
                 onClose={handleRetry}
@@ -182,10 +183,11 @@ export const ActListPage: FC<ActListProps> = ({ onItemClick }) => {
                   <ActItem
                     key={act.id}
                     act={act}
+                    tabType={currentTab}
                     onClick={handleItemClick}
                   />
                 ))}
-                
+
                 {/* Loading More Indicator */}
                 {isLoading && items.length > 0 && hasMore && (
                   <div style={{ padding: '16px' }}>

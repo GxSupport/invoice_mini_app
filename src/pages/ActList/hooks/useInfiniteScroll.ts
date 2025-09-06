@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { Act, ActListResponse } from '@/types/act';
+import type { ActListResponse } from '@/types/act';
+import type { ActListResponseData } from '@/types/act/list';
 
 interface UseInfiniteScrollOptions {
   loadData: (page: number) => Promise<ActListResponse>;
@@ -7,7 +8,7 @@ interface UseInfiniteScrollOptions {
 }
 
 export const useInfiniteScroll = ({ loadData, threshold = 0.8 }: UseInfiniteScrollOptions) => {
-  const [items, setItems] = useState<Act[]>([]);
+  const [items, setItems] = useState<ActListResponseData[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,17 +32,31 @@ export const useInfiniteScroll = ({ loadData, threshold = 0.8 }: UseInfiniteScro
     loadingRef.current = true;
     
     try {
-      const response = await loadDataRef.current(page);
-      setItems(prev => [...prev, ...response.items]);
-      setHasMore(response.hasMore);
-      setPage(prev => prev + 1);
+      // Use page state directly instead of from deps
+      setPage(currentPage => {
+        loadDataRef.current(currentPage).then(response => {
+          if (!loadingRef.current) return; // Prevent state update if component unmounted
+          
+          setItems(prev => [...prev, ...response.items]);
+          setHasMore(response.hasMore);
+          setIsLoading(false);
+          loadingRef.current = false;
+        }).catch(err => {
+          if (!loadingRef.current) return; // Prevent state update if component unmounted
+          
+          setError(err instanceof Error ? err.message : 'Ошибка загрузки данных');
+          setIsLoading(false);
+          loadingRef.current = false;
+        });
+        
+        return currentPage + 1;
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ошибка загрузки данных');
-    } finally {
       setIsLoading(false);
       loadingRef.current = false;
     }
-  }, [page, hasMore]);
+  }, [hasMore]);
 
   // Scroll handler with throttling
   const handleScroll = useCallback(() => {
@@ -93,8 +108,12 @@ export const useInfiniteScroll = ({ loadData, threshold = 0.8 }: UseInfiniteScro
 
   // Reset and load initial data when loadData changes
   useEffect(() => {
+    let isCancelled = false;
+    
     // Add timeout to prevent too frequent updates
     const timeoutId = setTimeout(() => {
+      if (isCancelled) return;
+      
       // Reset state
       setItems([]);
       setPage(0);
@@ -104,7 +123,7 @@ export const useInfiniteScroll = ({ loadData, threshold = 0.8 }: UseInfiniteScro
       
       // Load initial data
       const loadData = async () => {
-        if (loadingRef.current) return;
+        if (loadingRef.current || isCancelled) return;
         
         setIsLoading(true);
         setError(null);
@@ -112,21 +131,30 @@ export const useInfiniteScroll = ({ loadData, threshold = 0.8 }: UseInfiniteScro
         
         try {
           const response = await loadDataRef.current(0);
-          setItems(response.items);
-          setHasMore(response.hasMore);
-          setPage(1);
+          if (!isCancelled) {
+            setItems(response.items);
+            setHasMore(response.hasMore);
+            setPage(1);
+          }
         } catch (err) {
-          setError(err instanceof Error ? err.message : 'Ошибка загрузки данных');
+          if (!isCancelled) {
+            setError(err instanceof Error ? err.message : 'Ошибка загрузки данных');
+          }
         } finally {
-          setIsLoading(false);
+          if (!isCancelled) {
+            setIsLoading(false);
+          }
           loadingRef.current = false;
         }
       };
       
       loadData();
-    }, 50); // 50ms debounce
+    }, 100); // Increased debounce to 100ms
     
-    return () => clearTimeout(timeoutId);
+    return () => {
+      isCancelled = true;
+      clearTimeout(timeoutId);
+    };
   }, [loadData]); // Only depend on loadData change
 
   // Retry function for error states

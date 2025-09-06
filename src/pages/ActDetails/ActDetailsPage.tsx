@@ -1,5 +1,5 @@
 import { Placeholder, Button } from '@telegram-apps/telegram-ui';
-import {AlertCircle, FileSignature} from 'lucide-react';
+import {AlertCircle} from 'lucide-react';
 import type { FC } from 'react';
 
 import { Page } from '@/components/Page';
@@ -11,7 +11,7 @@ import { ActSeller } from './components/ActSeller';
 import { ActAmount } from './components/ActAmount';
 import { ActMetadata } from './components/ActMetadata';
 import {Link} from "@/components/Link/Link.tsx";
-import {openLink} from "@telegram-apps/sdk-react";
+
 
 interface ActDetailsPageProps {
   act: Act | null;
@@ -90,17 +90,6 @@ export const ActDetailsPage: FC<ActDetailsPageProps> = ({
             <ActHeader act={act} />
             sdas
               <Link to="eimzo://sign?qc=Test" style={{ textDecoration: 'none' }}> Open Link</Link>
-              <Button
-                  before={<FileSignature />}
-                  mode="filled"
-                  size="s"
-                  onClick={(e) => {
-                      e.stopPropagation();
-                      openLink("eimzo://sign?qc=Test");
-                  }}
-              >
-                  Create channel
-              </Button>
             {/* Seller Section */}
             <div style={{
               backgroundColor: 'var(--tg-theme-bg-color, #ffffff)'

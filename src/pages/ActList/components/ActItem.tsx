@@ -1,60 +1,79 @@
-import {Cell, Text} from '@telegram-apps/telegram-ui';
-
+import { Cell, Text } from '@telegram-apps/telegram-ui';
 import { FileSignature } from 'lucide-react';
 import type { FC } from 'react';
 
-import type { Act } from '@/types/act';
+import type { ActTabType } from '@/types/act';
 import { formatAmount, formatDate } from '@/utils/formatters';
+import { getStateColor } from '@/api/acts';
+import { ActListResponseData } from '@/types/act/list';
+import { StatusBadge } from './StatusBadge';
 
 interface ActItemProps {
-  act: Act;
+  act: ActListResponseData;
+  tabType: ActTabType;
   onClick: (actId: string) => void;
 }
 
-// Status color mapping
-const getStatusColor = (status: Act['state']): 'primary' | 'secondary' | 'green' | 'red' => {
-  switch (status) {
-    case 'completed':
-      return 'green';
-    case 'error':
-      return 'red';
-    case 'draft':
-      return 'secondary';
-    case 'sending':
-      return 'primary';
-    default:
-      return 'secondary';
+export const ActItem: FC<ActItemProps> = ({ act, tabType, onClick }) => {
+  // Determine counterpart based on tab type
+  const getCounterpart = () => {
+    switch (tabType) {
+      case 'incoming':
+        return {
+          name: act.sellername,
+          tin: act.sellertin
+        };
+      case 'outgoing':
+        return {
+          name: act.buyername,
+          tin: act.buyertin
+        };
+      default:
+        return {
+          name: act.sellername,
+          tin: act.sellertin
+        };
+    }
+  };
+
+  const counterpart = getCounterpart();
+  const stateColor = getStateColor(act.stateid, act.statetext?.status);
+
+  // Build description (contract + notes + date)
+  const descriptionParts = [];
+
+  if (act.contractdoc?.contractno) {
+    descriptionParts.push(`Договор № ${act.contractdoc.contractno} от ${formatDate(act.contractdoc.contractdate)}`);
   }
-};
 
-// Status text mapping
-const getStatusText = (status: Act['state']): string => {
-  switch (status) {
-    case 'draft':
-      return 'Черновик';
-    case 'sending':
-      return 'Отправка';
-    case 'sent':
-      return 'Отправлен';
-    case 'received':
-      return 'Получен';
-    case 'completed':
-      return 'Завершен';
-    case 'error':
-      return 'Ошибка';
-    default:
-      return status;
+  if (act.notes) {
+    descriptionParts.push(`— ${act.notes}`);
   }
-};
 
-export const ActItem: FC<ActItemProps> = ({ act, onClick }) => {
-  // Build subtitle with seller name, TIN, and optional note
-  const subtitle = [
-    `${act.seller.name} (ИНН ${act.seller.tin})`,
-    act.note && `— ${act.note}`
-  ].filter(Boolean).join(' ');
+  // Add act date at the end
+  descriptionParts.push(`· ${formatDate(act.actdoc.actdate)}`);
 
-  const rightContent = (
+  const description = descriptionParts.join(' ');
+
+  // Title with badge
+  const titleContent = (
+    <div style={{ display: 'flex', alignItems: 'center' }}>
+      <Text
+        style={{
+          fontSize: '16px',
+          fontWeight: 600,
+          color: 'var(--tg-theme-text-color, #000000)',
+          lineHeight: '20px'
+        }}
+      >
+        № {act.actdoc.actno}
+      </Text>
+      <StatusBadge type="dot" color={stateColor} />
+    </div>
+  );
+
+  // After content (amount + status chip)
+  const afterContent = (
     <div style={{
       display: 'flex',
       flexDirection: 'column',
@@ -69,75 +88,30 @@ export const ActItem: FC<ActItemProps> = ({ act, onClick }) => {
           color: 'var(--tg-theme-text-color, #000000)'
         }}
       >
-        {formatAmount(act.payable_total)}
+        {formatAmount(act.payabletotal)}
       </Text>
-
-      <div
-        style={{
-          fontSize: '12px',
-          padding: '2px 6px',
-          borderRadius: '8px',
-          backgroundColor: getStatusColor(act.state) === 'green'
-            ? 'var(--tg-theme-link-color, #007AFF)'
-            : getStatusColor(act.state) === 'red'
-            ? 'var(--tg-theme-destructive-text-color, #ff0000)'
-            : 'var(--tg-theme-hint-color, #999999)',
-          color: '#ffffff',
-          fontWeight: 500,
-          textAlign: 'center' as const,
-          minWidth: '60px'
-        }}
-      >
-        {getStatusText(act.state)}
-      </div>
+      <StatusBadge
+        type="chip"
+        color={stateColor}
+        text={act.statetext?.text || `Status ${act.stateid}`}
+      />
     </div>
   );
 
   return (
     <Cell
-      before={<FileSignature size={20} strokeWidth={1.5} />}
-      after={rightContent}
+      title={titleContent}
+      subhead={counterpart.name}
+      subtitle={`ИНН ${counterpart.tin}`}
+      description={description}
+      after={afterContent}
       onClick={() => onClick(act.id)}
       interactiveAnimation="opacity"
       style={{
-        minHeight: '64px',
-        padding: '12px 16px'
-      }}
+        minHeight: '56px',
+        '--tg-cell-padding': '16px',
+      } as any}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-        <Text
-          style={{
-            fontSize: '16px',
-            fontWeight: 500,
-            color: 'var(--tg-theme-text-color, #000000)',
-            lineHeight: '20px'
-          }}
-        >
-          № {act.no}
-        </Text>
-        <Text
-          style={{
-            fontSize: '14px',
-            color: 'var(--tg-theme-hint-color, #999999)',
-            lineHeight: '18px',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            maxWidth: '200px'
-          }}
-        >
-          {subtitle}
-        </Text>
-        <Text
-          style={{
-            fontSize: '12px',
-            color: 'var(--tg-theme-hint-color, #999999)',
-            lineHeight: '16px'
-          }}
-        >
-          {formatDate(act.date)}
-        </Text>
-      </div>
     </Cell>
   );
 };
