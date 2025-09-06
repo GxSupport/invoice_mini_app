@@ -15,7 +15,8 @@ export function AuthGuard({ children }: AuthGuardProps) {
   useEffect(() => {
     try {
       const rawData = retrieveRawInitData();
-      setInitRawData(rawData);
+      // @ts-ignore
+        setInitRawData(rawData);
     } catch (error) {
       console.error('Failed to retrieve init data:', error);
     }

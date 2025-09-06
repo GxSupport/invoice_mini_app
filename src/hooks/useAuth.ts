@@ -49,8 +49,8 @@ export const useAuth = () => {
         console.log('Token exists but user data missing, fetching profile...');
         try {
           const profileResponse = await getProfile(token);
-          user = profileResponse.user;
-          
+          user = profileResponse.data;
+
           // Save user data to storage
           if (import.meta.env.DEV) {
             localStorage.setItem(AUTH_KEYS.USER, JSON.stringify(user));
@@ -62,19 +62,19 @@ export const useAuth = () => {
               localStorage.setItem(AUTH_KEYS.USER, JSON.stringify(user));
             }
           }
-          
+
           console.log('Profile fetched and saved:', user);
           return { token, user, isAuthenticated: true };
         } catch (error: any) {
           console.error('Profile fetch failed:', error);
-          
+
           // If 401, token is invalid - clear it
           if (error.message?.includes('401') || error.response?.status === 401) {
             console.log('Token is invalid (401), clearing auth');
             await clearAuth();
             return { token: null, user: null, isAuthenticated: false };
           }
-          
+
           // For other errors, return with token but no user
           return { token, user: null, isAuthenticated: false };
         }
@@ -90,12 +90,12 @@ export const useAuth = () => {
         const userStr = localStorage.getItem(AUTH_KEYS.USER);
         const user = userStr ? JSON.parse(userStr) : null;
         console.log('Fallback storage - token:', token, 'user:', user);
-        
+
         if (token && !user) {
           // Try to fetch profile with localStorage token
           try {
             const profileResponse = await getProfile(token);
-            const fetchedUser = profileResponse.user;
+            const fetchedUser = profileResponse.data;
             localStorage.setItem(AUTH_KEYS.USER, JSON.stringify(fetchedUser));
             return { token, user: fetchedUser, isAuthenticated: true };
           } catch (profileError: any) {
@@ -107,7 +107,7 @@ export const useAuth = () => {
             return { token, user: null, isAuthenticated: false };
           }
         }
-        
+
         return { token, user, isAuthenticated: !!(token && user) };
       } catch {
         console.log('All storage methods failed');
@@ -194,7 +194,7 @@ export const useAuth = () => {
 };
 
 export const useUserVerification = (initRawData: string | null) => {
-  const { setAuth } = useAuth();
+  const { setAuth, getStoredAuth } = useAuth();
   const [data, setData] = useState<VerificationResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
@@ -211,9 +211,26 @@ export const useUserVerification = (initRawData: string | null) => {
       setHasRun(true);
 
       try {
+        // Check if auth data already exists in storage
+        const storedAuth = await getStoredAuth();
+        console.log('Checking stored auth before API call:', storedAuth);
+        
+        if (storedAuth?.isAuthenticated && storedAuth.token && storedAuth.user) {
+          console.log('Auth data found in storage, skipping API call');
+          // Create verification response from stored data
+          setData({
+            token: storedAuth.token,
+            is_exist: true,
+            user: storedAuth.user
+          });
+          setIsLoading(false);
+          return;
+        }
+
+        console.log('No valid auth data in storage, making API call');
         const result = await verifyUser(initRawData);
         setData(result);
-        
+
         // Only set auth if user exists and has token
         if (result.token && result.is_exist) {
           await setAuth(result);
@@ -231,7 +248,7 @@ export const useUserVerification = (initRawData: string | null) => {
     };
 
     fetchVerification();
-  }, [initRawData, hasRun, setAuth]);
+  }, [initRawData, hasRun, setAuth, getStoredAuth]);
 
   return {
     data,
