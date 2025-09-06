@@ -1,4 +1,5 @@
-import { Cell, Text } from '@telegram-apps/telegram-ui';
+import {Cell, Text} from '@telegram-apps/telegram-ui';
+
 import { FileSignature } from 'lucide-react';
 import type { FC } from 'react';
 
@@ -70,6 +71,7 @@ export const ActItem: FC<ActItemProps> = ({ act, onClick }) => {
       >
         {formatAmount(act.payable_total)}
       </Text>
+
       <div
         style={{
           fontSize: '12px',
