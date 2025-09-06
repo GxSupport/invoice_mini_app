@@ -14,14 +14,7 @@ import { FilterModal } from './components/FilterModal';
 import { EmptyState } from './components/EmptyState';
 import { ShimmerLoader } from './components/ShimmerLoader';
 
-// Telemetry event emitter (mock implementation)
-const emitTelemetryEvent = (event: string, data?: Record<string, any>) => {
-  if (typeof window !== 'undefined' && window.Telegram?.WebApp?.sendData) {
-    const payload = { event, data, timestamp: Date.now() };
-    console.log('Telemetry:', payload);
-    // In real app: window.Telegram.WebApp.sendData(JSON.stringify(payload));
-  }
-};
+
 
 export const ActListPage: FC<ActListProps> = ({ onItemClick }) => {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
@@ -60,49 +53,35 @@ export const ActListPage: FC<ActListProps> = ({ onItemClick }) => {
 
   // Handle tab change
   const handleTabChange = useCallback((tab: ActTabType) => {
-    emitTelemetryEvent('tab_change', { from: currentTab, to: tab });
     setCurrentTab(tab);
   }, [currentTab, setCurrentTab]);
 
   // Handle filter modal
   const handleFilterOpen = useCallback(() => {
-    emitTelemetryEvent('filter_open', { currentTab, hasActiveFilters });
     setIsFilterModalOpen(true);
   }, [currentTab, hasActiveFilters]);
 
   const handleFilterApply = useCallback((newFilters: ActFilter) => {
-    emitTelemetryEvent('filter_apply', { filters: newFilters, tab: currentTab });
     applyFilters(newFilters);
   }, [applyFilters, currentTab]);
 
   const handleFilterClear = useCallback(() => {
-    emitTelemetryEvent('filter_clear', { tab: currentTab });
     clearFilters();
   }, [clearFilters, currentTab]);
 
   // Handle item click
   const handleItemClick = useCallback((actId: string) => {
-    emitTelemetryEvent('item_open', { actId, tab: currentTab });
     onItemClick(actId);
   }, [onItemClick, currentTab]);
 
   // Handle retry
-  const handleRetry = useCallback(() => {
-    emitTelemetryEvent('retry_load', { tab: currentTab });
-    retry();
-  }, [retry, currentTab]);
+    useCallback(() => {
+        retry();
+    }, [retry, currentTab]);
 
-  // Handle infinite scroll event
-  useEffect(() => {
-    if (isLoading) {
-      emitTelemetryEvent('infinite_load_request', {
-        tab: currentTab,
-        currentItemsCount: items.length
-      });
-    }
-  }, [isLoading, currentTab, items.length]);
 
   // @ts-ignore
+    // @ts-ignore
     return (
     <Page back={true}>
       <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
@@ -156,7 +135,7 @@ export const ActListPage: FC<ActListProps> = ({ onItemClick }) => {
                 type="section"
                 header="Ошибка загрузки"
                 description={error}
-                onClose={handleRetry}
+                //onClose={handleRetry}
               />
             </div>
           )}

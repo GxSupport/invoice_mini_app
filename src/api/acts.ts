@@ -33,7 +33,7 @@ export const STATUS_MAPPINGS = {
     8: { text: 'принято доверенного лица', class: 'info', color: '#007AFF' },
     9: { text: 'отклонено доверенного лица', class: 'info', color: '#007AFF' },
     10: { text: 'Отправлено', class: 'info', color: '#007AFF' },
-    15: { text: 'ожидает подписи получателя', class: 'info', color: '#007AFF' },
+    15: { text: 'ждем подпись партнера', class: 'info', color: '#007AFF' },
     17: { text: 'Вы отменили отправку', class: 'warning', color: '#FF9500' },
     20: { text: 'Получатель отклонил', class: 'danger', color: '#FF3B30' },
     30: { text: 'Принято', class: 'success', color: '#34C759' },
