@@ -1,11 +1,11 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Spinner, Placeholder } from '@telegram-apps/telegram-ui';
 import type { FC } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
 import { HomePage } from './HomePage';
-import type { DocumentType, DocumentStats } from '@/types/home';
+import type { MenuItemType } from '@/types/home';
 import type { InvoiceUser } from '@/types/auth';
 
 export const HomePageContainer: FC = () => {
@@ -35,19 +35,14 @@ export const HomePageContainer: FC = () => {
     loadUser();
   }, []);
 
-  // Mock stats data - in real app this would come from API
-  const mockStats = useMemo(() => ({
-    invoice: { count: 19, pending: 5 } as DocumentStats,
-    act: { count: 12 } as DocumentStats,
-    ttn: { count: 8, pending: 2 } as DocumentStats,
-    empowerment: { count: 3 } as DocumentStats,
-    contract: { count: 15, pending: 1 } as DocumentStats,
-  }), []);
-
-  const handleDocumentOpen = (type: DocumentType) => {
-    console.log('Opening document type:', type);
-    // TODO: Navigate to document list page
-    // navigate(`/documents/${type}`);
+  const handleMenuOpen = (type: MenuItemType) => {
+    console.log('Opening menu item:', type);
+    // TODO: Navigate to appropriate page based on type
+    if (type === 'payments') {
+      // navigate('/payments');
+    } else {
+      // navigate(`/documents/${type}`);
+    }
   };
 
   if (isLoading) {
@@ -67,8 +62,7 @@ export const HomePageContainer: FC = () => {
   return (
     <HomePage
       user={user}
-      stats={mockStats}
-      onOpen={handleDocumentOpen}
+      onOpen={handleMenuOpen}
     />
   );
 };

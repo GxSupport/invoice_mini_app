@@ -1,20 +1,50 @@
-import { useEffect, useMemo } from 'react';
-import { List, Section, Cell, Avatar, Badge } from '@telegram-apps/telegram-ui';
+import { useMemo } from 'react';
+import { List, Section, Cell, Avatar } from '@telegram-apps/telegram-ui';
+import { 
+  FileText, 
+  FileSignature, 
+  Truck, 
+  UserCheck, 
+  FileSpreadsheet, 
+  CreditCard,
+  ExternalLink 
+} from 'lucide-react';
 import type { FC } from 'react';
 
 import { Page } from '@/components/Page';
-import type { HomeProps, DocumentCategory, DocumentType } from '@/types/home';
+import type { HomeProps, MenuSection } from '@/types/home';
 
-// Document categories configuration
-const DOCUMENT_CATEGORIES: DocumentCategory[] = [
-  { type: 'invoice', title: 'Invoice', icon: '📄' },
-  { type: 'act', title: 'Act', icon: '📋' },
-  { type: 'ttn', title: 'TTN', icon: '🚛' },
-  { type: 'empowerment', title: 'Empowerment', icon: '✍️' },
-  { type: 'contract', title: 'Contract', icon: '📝' },
+// Menu sections configuration based on JSON design
+const MENU_SECTIONS: MenuSection[] = [
+  {
+    title: 'Документы',
+    items: [
+      { id: 'invoice', title: 'Invoice', icon: { library: 'lucide', name: 'FileText', size: 20 }, chevron: true },
+      { id: 'act', title: 'Act', icon: { library: 'lucide', name: 'FileSignature', size: 20 }, chevron: true },
+      { id: 'ttn', title: 'TTN', icon: { library: 'lucide', name: 'Truck', size: 20 }, chevron: true },
+      { id: 'empowerment', title: 'Empowerment', icon: { library: 'lucide', name: 'UserCheck', size: 20 }, chevron: true },
+      { id: 'contract', title: 'Contract', icon: { library: 'lucide', name: 'FileSpreadsheet', size: 20 }, chevron: true },
+    ],
+  },
+  {
+    title: 'Другие',
+    items: [
+      { id: 'payments', title: 'Payments', icon: { library: 'lucide', name: 'CreditCard', size: 20 }, chevron: true },
+    ],
+  },
 ];
 
-export const HomePage: FC<HomeProps> = ({ user, stats, onOpen }) => {
+// Icon mapping
+const iconMap = {
+  FileText,
+  FileSignature,
+  Truck,
+  UserCheck,
+  FileSpreadsheet,
+  CreditCard,
+};
+
+export const HomePage: FC<HomeProps> = ({ user, onOpen }) => {
   // Generate avatar initials from full_name
   const avatarInitials = useMemo(() => {
     if (!user.full_name) return 'U';
@@ -30,10 +60,10 @@ export const HomePage: FC<HomeProps> = ({ user, stats, onOpen }) => {
       .join('');
   }, [user.full_name]);
 
-  // Format item count text
-  const formatItemCount = (count?: number) => {
-    if (!count) return undefined;
-    return `${count} items`;
+  // Get icon component by name
+  const getIconComponent = (iconName: string) => {
+    const IconComponent = iconMap[iconName as keyof typeof iconMap];
+    return IconComponent ? <IconComponent size={20} /> : null;
   };
 
   return (
@@ -46,43 +76,27 @@ export const HomePage: FC<HomeProps> = ({ user, stats, onOpen }) => {
               <Avatar size={48} acronym={avatarInitials} />
             }
             subtitle={user.activeCompanyInfo.shortName}
-            after="›"
+            after={<ExternalLink size={20} />}
           >
             {user.full_name}
           </Cell>
         </Section>
 
-        {/* Documents List Section */}
-        <Section header="Hujjatlar roʻyxati">
-          {DOCUMENT_CATEGORIES.map((category) => {
-            const categoryStats = stats[category.type];
-            const hasItems = categoryStats?.count && categoryStats.count > 0;
-            const hasPending = categoryStats?.pending && categoryStats.pending > 0;
-
-            return (
+        {/* Menu Sections */}
+        {MENU_SECTIONS.map((section) => (
+          <Section key={section.title} header={section.title}>
+            {section.items.map((item) => (
               <Cell
-                key={category.type}
-                before={<span style={{ fontSize: '20px' }}>{category.icon}</span>}
-                subtitle={hasItems ? formatItemCount(categoryStats.count) : undefined}
-                after={
-                  hasPending ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <Badge type="number" mode="critical">
-                        +{categoryStats.pending}
-                      </Badge>
-                      <span>›</span>
-                    </div>
-                  ) : (
-                    '›'
-                  )
-                }
-                onClick={() => onOpen(category.type)}
+                key={item.id}
+                before={getIconComponent(item.icon.name)}
+                after={item.chevron ? '›' : undefined}
+                onClick={() => onOpen(item.id)}
               >
-                {category.title}
+                {item.title}
               </Cell>
-            );
-          })}
-        </Section>
+            ))}
+          </Section>
+        ))}
       </List>
     </Page>
   );

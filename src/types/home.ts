@@ -1,20 +1,24 @@
 import type { InvoiceUser } from './auth';
 
-export type DocumentType = 'invoice' | 'act' | 'ttn' | 'empowerment' | 'contract';
-
-export interface DocumentStats {
-  count?: number;
-  pending?: number;
-}
+export type MenuItemType = 'invoice' | 'act' | 'ttn' | 'empowerment' | 'contract' | 'payments';
 
 export interface HomeProps {
   user: InvoiceUser;
-  stats: Record<DocumentType, DocumentStats>;
-  onOpen: (type: DocumentType) => void;
+  onOpen: (type: MenuItemType) => void;
 }
 
-export interface DocumentCategory {
-  type: DocumentType;
+export interface MenuItem {
+  id: MenuItemType;
   title: string;
-  icon: string;
+  icon: {
+    library: 'lucide';
+    name: string;
+    size: number;
+  };
+  chevron: boolean;
+}
+
+export interface MenuSection {
+  title: string;
+  items: MenuItem[];
 }

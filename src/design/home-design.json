@@ -1,0 +1,176 @@
+{
+  "app": {
+    "_note": "Telegram tizim shrift va tema",
+    "font": "Telegram System Font",
+    "theme": {
+      "mode": "auto",
+      "light": {
+        "background": "#FFFFFF",
+        "text_primary": "#000000",
+        "text_secondary": "#707579",
+        "divider": "#E6E6E6",
+        "surface": "#F9F9F9"
+      },
+      "dark": {
+        "background": "#0F0F0F",
+        "text_primary": "#FFFFFF",
+        "text_secondary": "#A0A0A0",
+        "divider": "#2C2C2C",
+        "surface": "#1C1C1C"
+      }
+    },
+    "spacing": { "xs": 4, "sm": 8, "md": 12, "lg": 16, "xl": 20 },
+    "radius": { "sm": 6, "md": 8, "lg": 12 }
+  },
+
+  "header": {
+    "_note": "Yuqori user bloki",
+    "padding_horizontal": "md",
+    "height": 64,
+    "avatar": { 
+      "size": 40, 
+      "shape": "circle", 
+      "bg": "#D9D9D9", 
+      "text": "initials" 
+    },
+    "title": { 
+      "source": "invoiceUser.full_name", 
+      "font_size": 16, 
+      "weight": 600, 
+      "color_token": "text_primary" 
+    },
+    "subtitle": { 
+      "source": "invoiceUser.activeCompanyInfo.shortName", 
+      "font_size": 14, 
+      "weight": 400, 
+      "color_token": "text_secondary" 
+    },
+    "trailing_icon": { 
+      "library": "lucide", 
+      "name": "ExternalLink", 
+      "size": 20, 
+      "color_token": "text_secondary" 
+    }
+  },
+
+  "sections": [
+    {
+      "_note": "Bo'lim: Документы",
+      "title": "Документы",
+      "title_style": { 
+        "font_size": 14, 
+        "weight": 600, 
+        "padding_horizontal": "md", 
+        "padding_vertical": "sm", 
+        "color_token": "text_primary" 
+      },
+      "item_style": {
+        "height": 56,
+        "padding_horizontal": "md",
+        "background_token": "background",
+        "title_style": { 
+          "font_size": 16, 
+          "weight": 500, 
+          "color_token": "text_primary" 
+        },
+        "divider": { 
+          "enabled": true, 
+          "position": "bottom", 
+          "color_token": "divider", 
+          "thickness": 1 
+        }
+      },
+      "items": [
+        { 
+          "id": "invoice", 
+          "title": "Invoice", 
+          "icon": { 
+            "library": "lucide", 
+            "name": "FileText", 
+            "size": 20 
+          }, 
+          "chevron": true 
+        },
+        { 
+          "id": "act", 
+          "title": "Act", 
+          "icon": { 
+            "library": "lucide", 
+            "name": "FileSignature", 
+            "size": 20 
+          }, 
+          "chevron": true 
+        },
+        { 
+          "id": "ttn", 
+          "title": "TTN", 
+          "icon": { 
+            "library": "lucide", 
+            "name": "Truck", 
+            "size": 20 
+          }, 
+          "chevron": true 
+        },
+        { 
+          "id": "empowerment", 
+          "title": "Empowerment", 
+          "icon": { 
+            "library": "lucide", 
+            "name": "UserCheck", 
+            "size": 20 
+          }, 
+          "chevron": true 
+        },
+        { 
+          "id": "contract", 
+          "title": "Contract", 
+          "icon": { 
+            "library": "lucide", 
+            "name": "FileSpreadsheet", 
+            "size": 20 
+          }, 
+          "chevron": true 
+        }
+      ]
+    },
+    {
+      "_note": "Bo'lim: Другие",
+      "title": "Другие",
+      "title_style": { 
+        "font_size": 14, 
+        "weight": 600, 
+        "padding_horizontal": "md", 
+        "padding_vertical": "sm", 
+        "color_token": "text_primary" 
+      },
+      "item_style": {
+        "height": 56,
+        "padding_horizontal": "md",
+        "background_token": "background",
+        "title_style": { 
+          "font_size": 16, 
+          "weight": 500, 
+          "color_token": "text_primary" 
+        },
+        "divider": { 
+          "enabled": true, 
+          "position": "bottom", 
+          "color_token": "divider", 
+          "thickness": 1 
+        }
+      },
+      "items": [
+        { 
+          "id": "payments", 
+          "title": "Payments", 
+          "icon": { 
+            "library": "lucide", 
+            "name": "CreditCard", 
+            "size": 20 
+          }, 
+          "chevron": true 
+        }
+      ]
+    }
+  ]
+}
