@@ -1,5 +1,6 @@
 import { apiClient } from './config';
 import type { ActListResponse, Act, ActTabType, ActFilter } from '@/types/act';
+import type { ActDetail, ActDetailResponse } from '@/types/act/detail';
 
 // API Request interface matching backend parameters
 export interface ActApiRequest {
@@ -186,15 +187,32 @@ export const getActs = async (
 };
 
 // Get single act details
-export const getActById = async (actId: string, token: string): Promise<Act> => {
-  // Assuming there's a details endpoint - adjust URL as needed
-  const response = await apiClient.get(`/documents/act/${actId}`, {
+export const getActById = async (actId: string, token: string): Promise<ActDetail> => {
+  const response = await apiClient.get(`/documents/act/view/${actId}`, {
     headers: {
       'Authorization': `Bearer ${token}`
     }
   });
 
-  return response.data || response;
+  console.log(`ActDetail Response for ${actId}:`, response.data);
+  console.log(`Response type:`, typeof response.data);
+  console.log(`Response keys:`, Object.keys(response.data || {}));
+
+  // Transform API response to frontend format
+  // Check if response.data is directly the ActDetail object or wrapped in another structure
+  if (!response.data) {
+    throw new Error('No response data received');
+  }
+
+  // If response.data has a 'data' property, use it
+  if (response.data.data) {
+    console.log('Using response.data.data structure');
+    return response.data.data;
+  }
+
+  // Otherwise, assume response.data is directly the ActDetail object
+  console.log('Using response.data directly as ActDetail');
+  return response.data;
 };
 
 // Individual API functions for each tab type

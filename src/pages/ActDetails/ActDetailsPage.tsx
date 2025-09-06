@@ -1,30 +1,31 @@
-import { Placeholder, Button } from '@telegram-apps/telegram-ui';
-import {AlertCircle} from 'lucide-react';
+import { Placeholder, Button, Banner } from '@telegram-apps/telegram-ui';
+import { AlertCircle } from 'lucide-react';
 import type { FC } from 'react';
 
 import { Page } from '@/components/Page';
 import { ShimmerLoader } from '@/pages/ActList/components/ShimmerLoader';
-import type { Act } from '@/types/act';
+import type { ActDetail } from '@/types/act/detail';
 
 import { ActHeader } from './components/ActHeader';
 import { ActSeller } from './components/ActSeller';
 import { ActAmount } from './components/ActAmount';
+import { ActProducts } from './components/ActProducts';
 import { ActMetadata } from './components/ActMetadata';
-import {Link} from "@/components/Link/Link.tsx";
-
 
 interface ActDetailsPageProps {
-  act: Act | null;
+  act: ActDetail | null;
   isLoading: boolean;
   error: string | null;
   onRetry: () => void;
+  actId: string;
 }
 
 export const ActDetailsPage: FC<ActDetailsPageProps> = ({
   act,
   isLoading,
   error,
-  onRetry
+  onRetry,
+  actId
 }) => {
   return (
     <Page back={true}>
@@ -88,20 +89,55 @@ export const ActDetailsPage: FC<ActDetailsPageProps> = ({
           }}>
             {/* Header Section */}
             <ActHeader act={act} />
-            sdas
-              <Link to="eimzo://sign?qc=Test" style={{ textDecoration: 'none' }}> Open Link</Link>
-            {/* Seller Section */}
+
+            {/* Last Error Banner */}
+            {act.lasterror && (
+              <div style={{ padding: '0 16px' }}>
+                <Banner
+                  type="section"
+                  header="Последняя ошибка"
+                  description={act.lasterror}
+                />
+              </div>
+            )}
+
+            {/* Deep link example - using window.location.href instead of Link */}
+              <div style={{ padding: '0 16px' }}>
+                <button
+                  onClick={() => window.location.href = 'eimzo://sign?qc=Test'}
+                  style={{
+                    textDecoration: 'none',
+                    backgroundColor: 'var(--tg-theme-button-color, #007AFF)',
+                    color: 'var(--tg-theme-button-text-color, #ffffff)',
+                    border: 'none',
+                    padding: '8px 16px',
+                    borderRadius: '8px'
+                  }}
+                >
+                  Open Deep Link
+                </button>
+              </div>
+
+
+            {/* Seller/Buyer Section */}
             <div style={{
               backgroundColor: 'var(--tg-theme-bg-color, #ffffff)'
             }}>
-              <ActSeller seller={act.seller} />
+              <ActSeller act={act} />
+            </div>
+
+            {/* Products Section */}
+            <div style={{
+              backgroundColor: 'var(--tg-theme-bg-color, #ffffff)'
+            }}>
+              <ActProducts products={act.productlist} payableTotal={act.payabletotal} actId={actId} />
             </div>
 
             {/* Amount Section */}
             <div style={{
               backgroundColor: 'var(--tg-theme-bg-color, #ffffff)'
             }}>
-              <ActAmount amount={act.payable_total} />
+              <ActAmount amount={act.payabletotal} />
             </div>
 
             {/* Metadata Section */}

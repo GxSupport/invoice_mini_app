@@ -1,18 +1,137 @@
 import { List, Section, Cell, Text } from '@telegram-apps/telegram-ui';
-import { Calendar, FileText } from 'lucide-react';
+import { Calendar, FileText, Filter, Clock } from 'lucide-react';
+import { useState } from 'react';
 import type { FC } from 'react';
 
-import type { Act } from '@/types/act';
+import type { ActDetail } from '@/types/act/detail';
 import { formatDate } from '@/utils/formatters';
 
 interface ActMetadataProps {
-  act: Act;
+  act: ActDetail;
 }
 
+const formatDateTime = (dateTime: string): string => {
+  const date = new Date(dateTime);
+  return date.toLocaleDateString('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+
 export const ActMetadata: FC<ActMetadataProps> = ({ act }) => {
+  const [showFullNotes, setShowFullNotes] = useState(false);
+  const shouldTruncateNotes = act.notes && act.notes.length > 100;
+
   return (
     <List>
-      <Section header="Дополнительная информация">
+      {/* Notes Section */}
+      {act.notes && (
+        <Section header="Примечание">
+          <Cell
+            before={<FileText size={20} strokeWidth={1.5} />}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <Text
+                style={{
+                  fontSize: '16px',
+                  fontWeight: 400,
+                  color: 'var(--tg-theme-text-color, #000000)',
+                  lineHeight: '22px',
+                  ...(shouldTruncateNotes && !showFullNotes ? {
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 3,
+                    WebkitBoxOrient: 'vertical'
+                  } : {})
+                }}
+              >
+                {act.notes}
+              </Text>
+              {shouldTruncateNotes && (
+                <Text
+                  onClick={() => setShowFullNotes(!showFullNotes)}
+                  style={{
+                    fontSize: '14px',
+                    color: 'var(--tg-theme-link-color, #007AFF)',
+                    cursor: 'pointer',
+                    lineHeight: '18px'
+                  }}
+                >
+                  {showFullNotes ? 'Показать меньше' : 'Показать больше'}
+                </Text>
+              )}
+            </div>
+          </Cell>
+        </Section>
+      )}
+
+      {/* Filter Information */}
+      {(act.filter?.actdate || act.filter?.contractdate) && (
+        <Section header="Фильтр">
+          {act.filter.actdate && (
+            <Cell
+              before={<Filter size={20} strokeWidth={1.5} />}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <Text
+                  style={{
+                    fontSize: '16px',
+                    fontWeight: 500,
+                    color: 'var(--tg-theme-text-color, #000000)',
+                    lineHeight: '20px'
+                  }}
+                >
+                  {formatDate(act.filter.actdate)}
+                </Text>
+                <Text
+                  style={{
+                    fontSize: '14px',
+                    color: 'var(--tg-theme-hint-color, #999999)',
+                    lineHeight: '18px'
+                  }}
+                >
+                  Фильтр акта
+                </Text>
+              </div>
+            </Cell>
+          )}
+
+          {act.filter.contractdate && (
+            <Cell
+              before={<Filter size={20} strokeWidth={1.5} />}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <Text
+                  style={{
+                    fontSize: '16px',
+                    fontWeight: 500,
+                    color: 'var(--tg-theme-text-color, #000000)',
+                    lineHeight: '20px'
+                  }}
+                >
+                  {formatDate(act.filter.contractdate)}
+                </Text>
+                <Text
+                  style={{
+                    fontSize: '14px',
+                    color: 'var(--tg-theme-hint-color, #999999)',
+                    lineHeight: '18px'
+                  }}
+                >
+                  Фильтр договора
+                </Text>
+              </div>
+            </Cell>
+          )}
+        </Section>
+      )}
+
+      {/* System Information */}
+      <Section header="Системная информация">
         {/* Creation Date */}
         <Cell
           before={<Calendar size={20} strokeWidth={1.5} />}
@@ -26,7 +145,7 @@ export const ActMetadata: FC<ActMetadataProps> = ({ act }) => {
                 lineHeight: '20px'
               }}
             >
-              {formatDate(act.date)}
+              {formatDateTime(act.created_at)}
             </Text>
             <Text
               style={{
@@ -40,36 +159,34 @@ export const ActMetadata: FC<ActMetadataProps> = ({ act }) => {
           </div>
         </Cell>
 
-        {/* Note/Comment if exists */}
-        {act.note && (
-          <Cell
-            before={<FileText size={20} strokeWidth={1.5} />}
-          >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-              <Text
-                style={{
-                  fontSize: '16px',
-                  fontWeight: 400,
-                  color: 'var(--tg-theme-text-color, #000000)',
-                  lineHeight: '20px'
-                }}
-              >
-                {act.note}
-              </Text>
-              <Text
-                style={{
-                  fontSize: '14px',
-                  color: 'var(--tg-theme-hint-color, #999999)',
-                  lineHeight: '18px'
-                }}
-              >
-                Примечание
-              </Text>
-            </div>
-          </Cell>
-        )}
+        {/* Update Date */}
+        <Cell
+          before={<Clock size={20} strokeWidth={1.5} />}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <Text
+              style={{
+                fontSize: '16px',
+                fontWeight: 500,
+                color: 'var(--tg-theme-text-color, #000000)',
+                lineHeight: '20px'
+              }}
+            >
+              {formatDateTime(act.updated_at)}
+            </Text>
+            <Text
+              style={{
+                fontSize: '14px',
+                color: 'var(--tg-theme-hint-color, #999999)',
+                lineHeight: '18px'
+              }}
+            >
+              Последнее обновление
+            </Text>
+          </div>
+        </Cell>
 
-        {/* Act ID for reference */}
+        {/* Act ID */}
         <Cell
           before={
             <div style={{

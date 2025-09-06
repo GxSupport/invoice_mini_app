@@ -20,6 +20,7 @@ export const ActDetailsContainer: FC = () => {
       isLoading={isLoading}
       error={error}
       onRetry={retry}
+      actId={actId || ''}
     />
   );
 };

@@ -1,17 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { Act } from '@/types/act';
+import type { ActDetail } from '@/types/act/detail';
 import { getActById } from '@/api/acts';
 import { useAuth } from '@/hooks/useAuth';
 
 interface UseActDetailsResult {
-  act: Act | null;
+  act: ActDetail | null;
   isLoading: boolean;
   error: string | null;
   retry: () => void;
 }
 
 export const useActDetails = (actId: string): UseActDetailsResult => {
-  const [act, setAct] = useState<Act | null>(null);
+  const [act, setAct] = useState<ActDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

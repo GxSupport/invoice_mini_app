@@ -5,6 +5,7 @@ import { InitDataPage } from '@/pages/InitDataPage';
 import { LoginPage } from '@/pages/LoginPage/LoginPage';
 import { ActListContainer } from '@/pages/ActList';
 import { ActDetailsContainer } from '@/pages/ActDetails';
+import { ProductListPage } from '@/pages/ActDetails/ProductListPage';
 
 interface Route {
   path: string;
@@ -19,4 +20,5 @@ export const routes: Route[] = [
   { path: '/login', Component: LoginPage, title: 'Login' },
   { path: '/act', Component: ActListContainer, title: 'Act' },
   { path: '/act/:actId', Component: ActDetailsContainer, title: 'Act Details' },
+  { path: '/act/:actId/products', Component: ProductListPage, title: 'Product List' },
 ];
