@@ -37,11 +37,17 @@ export const HomePageContainer: FC = () => {
 
   const handleMenuOpen = (type: MenuItemType) => {
     console.log('Opening menu item:', type);
-    // TODO: Navigate to appropriate page based on type
-    if (type === 'payments') {
-      // navigate('/payments');
-    } else {
-      // navigate(`/documents/${type}`);
+    
+    switch (type) {
+      case 'act':
+        navigate('/act');
+        break;
+      case 'payments':
+        // navigate('/payments');
+        break;
+      default:
+        // navigate(`/documents/${type}`);
+        console.log(`Navigation for ${type} not implemented yet`);
     }
   };
 
