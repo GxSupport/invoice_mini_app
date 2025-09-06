@@ -1,13 +1,13 @@
 import { useMemo } from 'react';
 import { List, Section, Cell, Avatar } from '@telegram-apps/telegram-ui';
-import { 
-  FileText, 
-  FileSignature, 
-  Truck, 
-  UserCheck, 
-  FileSpreadsheet, 
+import {
+  FileText,
+  FileSignature,
+  Truck,
+  UserCheck,
+  FileSpreadsheet,
   CreditCard,
-  ExternalLink 
+  ExternalLink
 } from 'lucide-react';
 import type { FC } from 'react';
 
@@ -19,11 +19,11 @@ const MENU_SECTIONS: MenuSection[] = [
   {
     title: 'Документы',
     items: [
-      { id: 'invoice', title: 'Invoice', icon: { library: 'lucide', name: 'FileText', size: 20 }, chevron: true },
-      { id: 'act', title: 'Act', icon: { library: 'lucide', name: 'FileSignature', size: 20 }, chevron: true },
-      { id: 'ttn', title: 'TTN', icon: { library: 'lucide', name: 'Truck', size: 20 }, chevron: true },
-      { id: 'empowerment', title: 'Empowerment', icon: { library: 'lucide', name: 'UserCheck', size: 20 }, chevron: true },
-      { id: 'contract', title: 'Contract', icon: { library: 'lucide', name: 'FileSpreadsheet', size: 20 }, chevron: true },
+      { id: 'invoice', title: 'Счет фактуры', icon: { library: 'lucide', name: 'FileText', size: 20 }, chevron: true },
+      { id: 'act', title: 'Акты', icon: { library: 'lucide', name: 'FileSignature', size: 20 }, chevron: true },
+      { id: 'ttn', title: 'ТТН 2', icon: { library: 'lucide', name: 'Truck', size: 20 }, chevron: true },
+      { id: 'empowerment', title: 'Доверенность', icon: { library: 'lucide', name: 'UserCheck', size: 20 }, chevron: true },
+      { id: 'contract', title: 'Договоры', icon: { library: 'lucide', name: 'FileSpreadsheet', size: 20 }, chevron: true },
     ],
   },
   {
