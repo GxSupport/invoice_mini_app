@@ -102,21 +102,7 @@ export const ActDetailsPage: FC<ActDetailsPageProps> = ({
             )}
 
             {/* Deep link example - using window.location.href instead of Link */}
-              <div style={{ padding: '0 16px' }}>
-                <button
-                  onClick={() => window.location.href = 'eimzo://sign?qc=Test'}
-                  style={{
-                    textDecoration: 'none',
-                    backgroundColor: 'var(--tg-theme-button-color, #007AFF)',
-                    color: 'var(--tg-theme-button-text-color, #ffffff)',
-                    border: 'none',
-                    padding: '8px 16px',
-                    borderRadius: '8px'
-                  }}
-                >
-                  Open Deep Link
-                </button>
-              </div>
+
 
 
             {/* Seller/Buyer Section */}

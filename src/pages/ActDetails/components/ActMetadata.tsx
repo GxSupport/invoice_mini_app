@@ -1,10 +1,10 @@
 import { List, Section, Cell, Text } from '@telegram-apps/telegram-ui';
-import { Calendar, FileText, Filter, Clock } from 'lucide-react';
+import { Calendar, FileText, Clock } from 'lucide-react';
 import { useState } from 'react';
 import type { FC } from 'react';
 
 import type { ActDetail } from '@/types/act/detail';
-import { formatDate } from '@/utils/formatters';
+
 
 interface ActMetadataProps {
   act: ActDetail;
@@ -68,68 +68,6 @@ export const ActMetadata: FC<ActMetadataProps> = ({ act }) => {
           </Cell>
         </Section>
       )}
-
-      {/* Filter Information */}
-      {(act.filter?.actdate || act.filter?.contractdate) && (
-        <Section header="Фильтр">
-          {act.filter.actdate && (
-            <Cell
-              before={<Filter size={20} strokeWidth={1.5} />}
-            >
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                <Text
-                  style={{
-                    fontSize: '16px',
-                    fontWeight: 500,
-                    color: 'var(--tg-theme-text-color, #000000)',
-                    lineHeight: '20px'
-                  }}
-                >
-                  {formatDate(act.filter.actdate)}
-                </Text>
-                <Text
-                  style={{
-                    fontSize: '14px',
-                    color: 'var(--tg-theme-hint-color, #999999)',
-                    lineHeight: '18px'
-                  }}
-                >
-                  Фильтр акта
-                </Text>
-              </div>
-            </Cell>
-          )}
-
-          {act.filter.contractdate && (
-            <Cell
-              before={<Filter size={20} strokeWidth={1.5} />}
-            >
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                <Text
-                  style={{
-                    fontSize: '16px',
-                    fontWeight: 500,
-                    color: 'var(--tg-theme-text-color, #000000)',
-                    lineHeight: '20px'
-                  }}
-                >
-                  {formatDate(act.filter.contractdate)}
-                </Text>
-                <Text
-                  style={{
-                    fontSize: '14px',
-                    color: 'var(--tg-theme-hint-color, #999999)',
-                    lineHeight: '18px'
-                  }}
-                >
-                  Фильтр договора
-                </Text>
-              </div>
-            </Cell>
-          )}
-        </Section>
-      )}
-
       {/* System Information */}
       <Section header="Системная информация">
         {/* Creation Date */}
